@@ -5,4 +5,5 @@ Deployed and hosted a highly available WordPress application using EC2, EFS, RDS
 Used Terraform to Automate Infrastructure and Ansible to Configure webservers.
 
 ### Diagram
-![Infrastructure](https://user-images.githubusercontent.com/32189783/203697357-ff7ca8b9-5b54-4368-8d5e-22701ff2bfd7.jpg)
+
+![Infra Final](https://user-images.githubusercontent.com/32189783/203697820-a6f22e7c-f190-44cd-b57b-2dcf8a5d8aea.jpg)
