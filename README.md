@@ -1,7 +1,6 @@
 # Wordpress-Application-on-AWS
 ### Diagram
-
-![Infra Final](https://user-images.githubusercontent.com/32189783/203697820-a6f22e7c-f190-44cd-b57b-2dcf8a5d8aea.jpg)
+![oie_XcKIrm3WVMtS](https://user-images.githubusercontent.com/32189783/203791588-96b650f3-c3d5-467c-b46c-124973075335.jpg)
 
 <br />Deployed and hosted a highly available WordPress application using EC2, EFS, RDS, Auto Scaling Group & VPC on AWS.
 <br />Used **Terraform** to Automate Infrastructure and **Ansible** to Configure webservers.
