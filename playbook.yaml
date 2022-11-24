@@ -1,0 +1,167 @@
+---
+- name: Mount EFS 
+  hosts: all
+  become: true
+  gather_facts: False
+  tasks:
+ # creating a directory /data where we will mount the volume 
+  - name: make data directory
+    file:
+      path: /var/www/html
+      state: directory
+# install efs-utils
+  - name: install amazon-efs-utils
+    yum:
+      name: amazon-efs-utils
+      state: latest
+# mount nfs
+  - name: mount nsf
+    command: mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport {{ file_system_dns }}:/ /var/www/html
+# fstab entry
+  - name: fstab entry
+    command: "sudo su -c \"echo '{{ file_system_dns }}:/ /data nfs4 defaults,vers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport 0 0' >> /etc/fstab\""
+    # echo fstab
+  - name: echo fstab
+    command: cat fstab 
+    register: output
+    args:
+      chdir: /etc
+  - debug: var=output.stdout_lines
+# Installing Apache
+- name: install apache
+  hosts: all
+  become: true
+  gather_facts: False
+  tasks:
+    - name: Install Apache
+      vars: 
+        ansible_python_interpreter: /usr/bin/python
+      yum:
+        name:
+          - httpd,httpd-tools,mod_ssl
+        update_cache: yes
+        state: present
+    - name: Enable service httpd and ensure it is not masked
+      systemd: 
+        name: httpd
+        enabled: yes
+        masked: no      
+    - name: Ensure apache is running
+      systemd: 
+        name: httpd
+        state: started
+ # Installing php
+- name: Install php and configure
+  hosts: all
+  become: true
+  gather_facts: False
+  tasks: 
+    - name: amazon-linux-extras
+      vars: 
+        ansible_python_interpreter: /usr/bin/python     
+      command: amazon-linux-extras enable php7.4
+    - name: yum-clean-metadata
+      command: yum clean metadata
+      args:
+        warn: no
+    - name: Install php php-common php-pear
+      yum:
+        name:
+          - php,php-common,php-pear,php-cgi,php-curl,php-mbstring,php-gd,php-mysqlnd,php-gettext,php-json,php-xml,php-fpm,php-intl,php-zip
+        update_cache: yes
+        state: present   
+# Installing MYSQL         
+- name: Installing PHP
+  hosts: all
+  become: true
+  gather_facts: False
+  tasks:
+    - name: Install the mysql 5.7
+      yum:
+        name: https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
+        state: present
+    - name: Importing RPM GPG key
+      command: rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2022    
+    - name: Pause for 2 minutes to build app cache
+      ansible.builtin.pause:
+        minutes: 2 
+    - name: Install mysql-community-server                                    #error
+      yum:
+        name:
+          - mysql-community-server  
+        update_cache: yes
+        state: present     
+    - name: Ensure my-sql is running
+      systemd: 
+        name: mysqld
+        enabled: yes
+        masked: no
+    - name: Ensure mysql is running
+      systemd: 
+        name: mysqld
+        state: started         
+# set permissions 
+- name: Add the user ec-2
+  hosts: all
+  become: true
+  tasks:
+    - name: add ec2-user to group
+      user:
+        name: ec2-user
+        groups: apache 
+        append: yes  
+    - name: Reconnect to server
+      meta: reset_connection    
+    - name: Recursively change ownership of a directory
+      ansible.builtin.file:
+        path: /var/www 
+        state: directory
+        recurse: yes
+        owner: ec2-user
+        group: apache
+    - name: Recursively change ownership of a directory /var/www/html
+      ansible.builtin.file:
+        path: /var/www/html
+        state: directory
+        recurse: yes
+        owner: apache
+        group: apache    
+# Wordpress Setup
+- name: Wordpress setup
+  hosts: all
+  become: true
+  tasks:
+    - name: Download Wordpress from a file path
+      get_url:
+            url: https://wordpress.org/latest.tar.gz
+            dest: /home/ec2-user/latest.tar.gz
+    - name: Extract wordpress.tar.gz into /home/ec2-user
+      ansible.builtin.unarchive:
+        src: /home/ec2-user/latest.tar.gz
+        dest: /home/ec2-user
+        remote_src: yes
+    - name: copy Wordpress files to /var/www/html
+      ansible.builtin.copy:
+        src: /home/ec2-user/wordpress/
+        dest: /var/www/html/
+        remote_src: yes 
+    - name: create wp config files
+      ansible.builtin.copy:
+        src: /var/www/html/wp-config-sample.php
+        dest: /var/www/html/wp-config.php
+        remote_src: yes 
+    - name: edit the wp-config file (database_name)
+      command: sed 's/database_name_here/demodb/' /var/www/html/wp-config.php
+    - name: edit the wp-config file (username)
+      command: sed 's/username_here/user/' /var/www/html/wp-config.php 
+    - name: edit the wp-config file (password)
+      command: sed 's/password_here/QxMCi6rO7T10HybO/' /var/www/html/wp-config.php    
+    - name: Restart service httpd, in all cases
+      ansible.builtin.service:
+        name: httpd
+        state: restarted  
+
+
+          
+
+

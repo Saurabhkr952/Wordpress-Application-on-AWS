@@ -1,0 +1,91 @@
+---
+- name: Install Python3
+  hosts: all
+  become: yes
+  tasks:
+  - name: Install python3
+    vars: 
+      ansible_python_interpreter: /usr/bin/python  
+    yum:
+      name:
+        - python3
+      update_cache: yes
+      state: present        
+
+- name: Install Apache
+# Installing Apache
+  hosts: all
+  become: yes
+  gather_facts: False
+  tasks:
+    - name: Install Apache
+      vars: 
+        ansible_python_interpreter: /usr/bin/python
+      yum:
+        name:
+          -  httpd
+          -  httpd-tools 
+          -  mod_ssl
+        update_cache: yes
+        state: present
+    - name: Enable service httpd and ensure it is not masked
+      systemd: 
+        name: httpd
+        enabled: yes
+        masked: no      
+    - name: Ensure apache is running
+      systemd: 
+        name: httpd
+        state: started
+- name: Install php and configure
+ # Installing php
+  hosts: all
+  become: yes
+  gather_facts: False
+  tasks: 
+    - name: amazon-linux-extras
+      vars: 
+        ansible_python_interpreter: /usr/bin/python     
+      command: amazon-linux-extras enable php7.4
+    - name: yum-clean-metadata
+      command: yum clean metadata
+      args:
+        warn: no
+    - name: Install php php-common php-pear
+      yum:
+        name:
+          - php 
+          - php-common 
+          - php-pear 
+          - php-cgi,php-curl,php-mbstring,php-gd,php-mysqlnd,php-gettext,php-json,php-xml,php-fpm,php-intl,php-zip
+         
+- name: Installing PHP
+# Installing mysql
+  hosts: all
+  become: yes
+  gather_facts: False
+  tasks:
+    - name: Install the mysql 5.7
+      yum:
+        name: https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
+        state: present
+    - name: Adding RPM GPG key
+      command: rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2022    
+    - name: Install mysql-community-server #error 
+      yum:
+        name:
+          - mysql-community-server 
+        update_cache: yes
+        state: present     
+    - name:
+      systemd: 
+        name: mysqld
+        enabled: yes
+        masked: no
+    - name: Ensure mysql is running
+      systemd: 
+        name: mysqld
+        state: started    
+
+
+
