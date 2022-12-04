@@ -4,6 +4,11 @@
 
 
 
-Due to My Account limit access. I can't able to launch more than one Instance.
+
 <br />Deployed and hosted a highly available WordPress application using EC2, EFS, RDS, Auto Scaling Group & VPC on AWS.
 <br />Used **Terraform** to Automate Infrastructure and **Ansible** to Configure webservers.
+
+
+Due to My Account limit access. I can't able to launch more than one Instance.
+
+
