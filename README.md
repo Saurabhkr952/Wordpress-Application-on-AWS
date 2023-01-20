@@ -5,6 +5,7 @@
 
 
 <h1 align="left">Deploy WordPress On AWS using Terraform(To Automate Infrastructure) and Ansible(to Configure webservers):
+  
 - Build a Three-Tier AWS Network VPC from Scratch
 - Create Nat Gateways
 - Create the Security Groups
