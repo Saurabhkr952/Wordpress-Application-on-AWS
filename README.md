@@ -4,7 +4,7 @@
 
 
 
-<h1 align="left">Deploy WordPress On AWS using Terraform(To Automate Infrastructure) and Ansible(to Configure webservers):
+<h1 align="left">Deploy WordPress On AWS using Terraform(To Automate Infrastructure) and Ansible(to Configure webservers):</h1>
   
   
 - Build a Three-Tier AWS Network VPC from Scratch
